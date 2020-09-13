@@ -46,7 +46,11 @@ export const lazySlidesOnRight = spec =>
 // get width of an element
 export const getWidth = elem => (elem && elem.offsetWidth) || 0;
 export const getHeight = elem => (elem && elem.offsetHeight) || 0;
-export const getSwipeDirection = (touchObject, verticalSwiping = false) => {
+export const getSwipeDirection = (
+  touchObject,
+  verticalSwiping = false,
+  rtl = false
+) => {
   var xDist, yDist, r, swipeAngle;
   xDist = touchObject.startX - touchObject.curX;
   yDist = touchObject.startY - touchObject.curY;
@@ -59,10 +63,10 @@ export const getSwipeDirection = (touchObject, verticalSwiping = false) => {
     (swipeAngle <= 45 && swipeAngle >= 0) ||
     (swipeAngle <= 360 && swipeAngle >= 315)
   ) {
-    return "left";
+    return rtl ? "right" : "left";
   }
   if (swipeAngle >= 135 && swipeAngle <= 225) {
-    return "right";
+    return rtl ? "left" : "right";
   }
   if (verticalSwiping === true) {
     if (swipeAngle >= 35 && swipeAngle <= 135) {
@@ -124,9 +128,6 @@ export const initializedState = spec => {
   let listHeight = slideHeight * spec.slidesToShow;
   let currentSlide =
     spec.currentSlide === undefined ? spec.initialSlide : spec.currentSlide;
-  if (spec.rtl && spec.currentSlide === undefined) {
-    currentSlide = slideCount - 1 - spec.initialSlide;
-  }
   let lazyLoadedList = spec.lazyLoadedList || [];
   let slidesToLoad = getOnDemandLazySlides({
     ...spec,
@@ -306,11 +307,11 @@ export const changeSlide = (spec, options) => {
   }
   return targetSlide;
 };
-export const keyHandler = (e, accessibility, rtl) => {
+export const keyHandler = (e, accessibility) => {
   if (e.target.tagName.match("TEXTAREA|INPUT|SELECT") || !accessibility)
     return "";
-  if (e.keyCode === 37) return rtl ? "next" : "previous";
-  if (e.keyCode === 39) return rtl ? "previous" : "next";
+  if (e.keyCode === 37) return "previous";
+  if (e.keyCode === 39) return "next";
   return "";
 };
 
@@ -368,13 +369,16 @@ export const swipeMove = (e, spec) => {
     return { scrolling: true };
   }
   if (verticalSwiping) touchObject.swipeLength = verticalSwipeLength;
-  let positionOffset =
-    (!rtl ? 1 : -1) * (touchObject.curX > touchObject.startX ? 1 : -1);
+  let positionOffset = touchObject.curX > touchObject.startX ? 1 : -1;
   if (verticalSwiping)
     positionOffset = touchObject.curY > touchObject.startY ? 1 : -1;
 
   let dotCount = Math.ceil(slideCount / slidesToScroll);
-  let swipeDirection = getSwipeDirection(spec.touchObject, verticalSwiping);
+  let swipeDirection = getSwipeDirection(
+    spec.touchObject,
+    verticalSwiping,
+    rtl
+  );
   let touchSwipeLength = touchObject.swipeLength;
   if (!infinite) {
     if (
@@ -447,7 +451,11 @@ export const swipeEnd = (e, spec) => {
   let minSwipe = verticalSwiping
     ? listHeight / touchThreshold
     : listWidth / touchThreshold;
-  let swipeDirection = getSwipeDirection(touchObject, verticalSwiping);
+  let swipeDirection = getSwipeDirection(
+    touchObject,
+    verticalSwiping,
+    spec.rtl
+  );
   // reset the state of touch related state variables.
   let state = {
     dragging: false,
@@ -553,10 +561,7 @@ export const getSlideCount = spec => {
     if (!swipedSlide) {
       return 0;
     }
-    const currentIndex =
-      spec.rtl === true
-        ? spec.slideCount - spec.currentSlide
-        : spec.currentSlide;
+    const currentIndex = spec.currentSlide;
     const slidesTraversed =
       Math.abs(swipedSlide.dataset.index - currentIndex) || 1;
     return slidesTraversed;
@@ -794,40 +799,23 @@ export const siblingDirection = spec => {
   }
 };
 
-export const slidesOnRight = ({
-  slidesToShow,
-  centerMode,
-  rtl,
-  centerPadding
-}) => {
+export const slidesOnRight = ({ slidesToShow, centerMode, centerPadding }) => {
   // returns no of slides on the right of active slide
   if (centerMode) {
     let right = (slidesToShow - 1) / 2 + 1;
     if (parseInt(centerPadding) > 0) right += 1;
-    if (rtl && slidesToShow % 2 === 0) right += 1;
     return right;
-  }
-  if (rtl) {
-    return 0;
   }
   return slidesToShow - 1;
 };
 
-export const slidesOnLeft = ({
-  slidesToShow,
-  centerMode,
-  rtl,
-  centerPadding
-}) => {
+export const slidesOnLeft = ({ slidesToShow, centerMode, centerPadding }) => {
   // returns no of slides on the left of active slide
   if (centerMode) {
     let left = (slidesToShow - 1) / 2 + 1;
     if (parseInt(centerPadding) > 0) left += 1;
-    if (!rtl && slidesToShow % 2 === 0) left += 1;
+    if (slidesToShow % 2 === 0) left += 1;
     return left;
-  }
-  if (rtl) {
-    return slidesToShow - 1;
   }
   return 0;
 };

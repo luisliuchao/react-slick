@@ -442,7 +442,7 @@ export class InnerSlider extends React.Component {
     this.clickable = true;
   };
   keyHandler = e => {
-    let dir = keyHandler(e, this.props.accessibility, this.props.rtl);
+    let dir = keyHandler(e, this.props.accessibility);
     dir !== "" && this.changeSlide({ message: dir });
   };
   selectHandler = options => {
@@ -535,14 +535,10 @@ export class InnerSlider extends React.Component {
   };
   play = () => {
     var nextIndex;
-    if (this.props.rtl) {
-      nextIndex = this.state.currentSlide - this.props.slidesToScroll;
+    if (canGoNext({ ...this.props, ...this.state })) {
+      nextIndex = this.state.currentSlide + this.props.slidesToScroll;
     } else {
-      if (canGoNext({ ...this.props, ...this.state })) {
-        nextIndex = this.state.currentSlide + this.props.slidesToScroll;
-      } else {
-        return false;
-      }
+      return false;
     }
 
     this.slideHandler(nextIndex);
