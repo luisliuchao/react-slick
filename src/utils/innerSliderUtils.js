@@ -478,7 +478,8 @@ export const swipeEnd = (e, spec) => {
       onSwipe(swipeDirection);
     }
     let slideCount, newSlide;
-    let activeSlide = infinite ? currentSlide : targetSlide;
+    // let activeSlide = infinite ? currentSlide : targetSlide;
+    let activeSlide = currentSlide;
     switch (swipeDirection) {
       case "left":
       case "up":
