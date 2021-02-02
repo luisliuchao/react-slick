@@ -121,6 +121,10 @@ export class InnerSlider extends React.Component {
       clearInterval(this.autoplayTimer);
     }
     this.ro.disconnect();
+    // always enable body scroll
+    if (this.props.verticalSwiping) {
+      this.enableBodyScroll();
+    }
   };
 
   didPropsChange(prevProps) {
